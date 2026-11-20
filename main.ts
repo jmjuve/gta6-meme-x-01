@@ -10,7 +10,10 @@
 // Outside the grader's container, MAKEFUN_BOT_DIR and MAKEFUN_OUTPUT_DIR stand in for /bot and /output:
 //   mkdir -p out && MAKEFUN_BOT_DIR=. MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { copyFileSync, mkdirSync } from 'node:fs';
+// Entry note (gta6-meme-x-01): this program's only job is to hand POST.json to
+// the gate. The meme itself lives in the X post POST.json points at; nothing
+// here renders, fetches, or judges it.
+import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const BOT_DIR = process.env.MAKEFUN_BOT_DIR ?? '/bot';
@@ -21,5 +24,10 @@ try {
   copyFileSync(join(BOT_DIR, 'POST.json'), join(OUTPUT_DIR, 'POST.json'));
 } catch (err) {
   console.error(`POST.json could not be copied from ${BOT_DIR}: ${(err as Error).message}`);
+  process.exit(1);
+}
+// Refuse to hand the gate an empty address: a copied POST.json must name a post.
+if (!readFileSync(join(OUTPUT_DIR, 'POST.json'), 'utf8').trim()) {
+  console.error('POST.json copied but empty');
   process.exit(1);
 }
